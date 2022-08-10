@@ -9,6 +9,9 @@ from pandas import read_csv
 from pprint import pprint
 from dotenv import load_dotenv
 from app import APP_ENV
+from plotly.graph_objects import Figure, Scatter
+import plotly
+import plotly.graph_objects as go
 
 
 # use professor code to format numbers and percentages
@@ -141,30 +144,78 @@ def get_custom_data(date):
 
         print(f"Adjusted closing price of {symbol_1.upper()} on {date} is: ",to_usd(stock_1_inputprice))
         print(f"Adjusted closing price of {symbol_2.upper()} on {date} is: ",to_usd(stock_2_inputprice))
-        print(f"If you invested $1,000 in {symbol_1.upper()} on {date}, your stock is worthing", to_usd(today_value_1),"today. Your accumulated gain/(loss) is",to_pct(custom_gain_1))
-        print(f"If you invested $1,000 in {symbol_2.upper()} on {date}, your stcok is worthing", to_usd(today_value_2),"today. Your accumulated gain/(loss) is",to_pct(custom_gain_2))
+        print(f"If you invested $1,000 in {symbol_1.upper()} on {date}, your stock is worthing", to_usd(today_value_1),"today. Your holding period gain/(loss) is",to_pct(custom_gain_1))
+        print(f"If you invested $1,000 in {symbol_2.upper()} on {date}, your stcok is worthing", to_usd(today_value_2),"today. Your holding period gain/(loss) is",to_pct(custom_gain_2))
         print(f"The winner is {winner.upper()}!")
 
+def new_df():
+    # get new_df for line chart
+    # pull data for stock 1
+    csv_1_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={symbol_1}&outputsize=full&apikey={alphavantage_API_KEY}&datatype=csv"
+    df_1 = read_csv(csv_1_url)
+    latest_day_1 = df_1["timestamp"].max()
+    earliest_day_1 = df_1["timestamp"].min()
 
+    for index, row in df_1.iterrows():
+        if row["timestamp"] == latest_day_1:
+            latest_price_1 = row["adjusted_close"]
+
+    # pull data for stock 2
+    csv_2_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={symbol_2}&outputsize=full&apikey={alphavantage_API_KEY}&datatype=csv"
+    df_2 = read_csv(csv_2_url)
+    latest_day_2 = df_2["timestamp"].max()
+    earliest_day_2 = df_2["timestamp"].min()
+
+    for index, row in df_2.iterrows():
+        if row["timestamp"] == latest_day_2:
+            latest_price_2 = row["adjusted_close"]
+    
+    # remove extra rows to get the same number of rows between the two stocks
+    # use "copy" function to avoid SettingWithCopyWarning
+    if earliest_day_1 < earliest_day_2:
+        df_1 = df_1.loc[df_1.timestamp >= earliest_day_2]
+        new_df_2 = df_2.copy()
+        new_df_1 = df_1.copy()
+    else:
+        df_2 = df_2.loc[df_2.timestamp >= earliest_day_1]
+        new_df_2 = df_2.copy()
+        new_df_1 = df_1.copy()
+
+    # add a column to both dataframes to calculate the holding gain/loss for each day
+    new_df_1.loc[:, ('gain_loss_%')]=(latest_price_1/new_df_1["adjusted_close"]-1)*100
+    new_df_2.loc[:, ('gain_loss_%')]=(latest_price_2/new_df_2["adjusted_close"]-1)*100
+
+    line_1 = Scatter(x=new_df_1["timestamp"], y=new_df_1["gain_loss_%"], name=symbol_1)   
+    line_2 = Scatter(x=new_df_2["timestamp"], y=new_df_2["gain_loss_%"], name=symbol_2)
+    fig = Figure(data=[line_1,line_2]) 
+    fig.update_layout(title=f"Holding Period Gain/Loss: {symbol_1} v.s. {symbol_2}",yaxis_ticksuffix = '%', yaxis_tickformat = ',.2f')
+    fig.show()
    
-print(f"GETTING THE DATA IN {APP_ENV.upper()} MODE...")
 
-# part 1: get basic information
-# capture inputs
-symbol_1, symbol_2=select_stocks()
-print("1st Stock: ", symbol_1.upper())
-print("2nd Stock: ", symbol_2.upper())
+if __name__ == "__main__":
 
-# display results
+    print(f"GETTING THE DATA IN {APP_ENV.upper()} MODE...")
 
-stock_information(symbol=symbol_1)
-stock_information(symbol=symbol_2)
+    # part 1: get basic information
+    # capture inputs
+    symbol_1, symbol_2=select_stocks()
+    print("1st Stock: ", symbol_1.upper())
+    print("2nd Stock: ", symbol_2.upper())
 
-# part 2: put custom date and compare
-# capture input
-input_date=get_custom_date()
-print("Date selected: ", input_date)
+    # display results
 
-# print out the results
+    stock_information(symbol=symbol_1)
+    stock_information(symbol=symbol_2)
 
-get_custom_data(date=input_date)
+    # part 2: put custom date and compare
+    # capture input
+    input_date=get_custom_date()
+    print("Date selected: ", input_date)
+
+    # print out the results
+
+    get_custom_data(date=input_date)
+
+    new_df()
+
+

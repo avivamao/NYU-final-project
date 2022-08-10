@@ -7,6 +7,8 @@ pandas
 requests
 python-dotenv
 flask
+plotly
+tenacity
 
 # Heroku needs this package to know what app to run
 gunicorn

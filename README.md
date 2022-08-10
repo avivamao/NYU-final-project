@@ -30,7 +30,7 @@ Create an environement file ".env" for API and other vars:
 ```sh
 alphavantage_API_KEY="_____________"  # for this app, I used one of the premium APIs provided by professor
 
-APP_ENV="production"
+APP_ENV="development"
 STOCK_1="GOOGL"
 STOCK_2="AAPL"
 ```
@@ -40,16 +40,6 @@ Printing the basic information of the stockas:
 
 ```sh
 python -m app.stock_comparison
-
-# in production mode:
-APP_ENV="production" python -m app.stock_info
 ```
-
-
-
-
-## Web app
-
-
 
 ## Testing
