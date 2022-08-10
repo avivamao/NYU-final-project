@@ -42,8 +42,9 @@ Printing the basic information of the stockas:
 python -m app.stock_comparison
 
 # in production mode:
-APP_ENV="production" COUNTRY_CODE="US" ZIP_CODE="20057" python -m app.weather_service
+APP_ENV="production" python -m app.stock_info
 ```
+
 
 
 
