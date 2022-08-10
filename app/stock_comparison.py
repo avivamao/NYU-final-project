@@ -54,7 +54,6 @@ def stock_information(symbol):
     earliest_day = df["timestamp"].min()
 
     print(f"---------------- Basic Information: {symbol.upper()}","----------------")
-    print("")
     print("Symbol:", info["Symbol"])
     print("Name:", info["Name"])
     print("Description:", info["Description"])
@@ -80,6 +79,7 @@ def stock_information(symbol):
     # calculate the inception accumulated gain/loss by holding the stock
     Accu_gain = latest_price/earliest_price-1
     print("Accumulated gain/loss since IPO: ",to_pct(Accu_gain))
+    print("")
     
 
 
