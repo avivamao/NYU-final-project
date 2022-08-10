@@ -1,0 +1,18 @@
+# this is the requirements.txt file...
+
+#
+# DEVELOPMENT / PRODUCTION
+#
+pandas
+requests
+python-dotenv
+flask
+
+# Heroku needs this package to know what app to run
+gunicorn
+#
+# TEST
+#
+
+
+
