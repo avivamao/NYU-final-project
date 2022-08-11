@@ -1,4 +1,5 @@
 # app/stock_comparison.py
+# some packages/functions are not imported but not used. They are saved for furure-use,i.e. adding web_app.
 
 import requests
 import json
@@ -12,6 +13,8 @@ from app import APP_ENV
 from plotly.graph_objects import Figure, Scatter
 import plotly
 import plotly.graph_objects as go
+from datetime import datetime
+import sys
 
 
 # use professor code to format numbers and percentages
@@ -37,7 +40,6 @@ def select_stocks():
         symbol_2 = STOCK_2
     return symbol_1, symbol_2
 
-
 def stock_information(symbol):
 
     # fetch the data for the stock
@@ -48,6 +50,13 @@ def stock_information(symbol):
     overview_url = f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={symbol}&apikey={alphavantage_API_KEY}"
     overview = requests.get(overview_url)
     info = overview.json()
+    
+    # validate the stock symbol and exit the program if error.
+    # reference: https://stackoverflow.com/questions/66652450/catch-systemexit-message-with-pytest
+    # reference: https://medium.com/python-pandemonium/testing-sys-exit-with-pytest-10c6e5f7726f
+    if len(info) == 0:
+        sys.exit(f"{symbol.upper()} is not a valid stock symbol. Please re-enter.")
+    
     csv_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={symbol}&outputsize=full&apikey={alphavantage_API_KEY}&datatype=csv"
     df = read_csv(csv_url)
     latest_day = df["timestamp"].max()
@@ -81,7 +90,16 @@ def stock_information(symbol):
     print("Accumulated gain/loss since IPO: ",to_pct(Accu_gain))
     print("")
     
-
+# validate the input date format
+# reference: https://stackoverflow.com/questions/16870663/how-do-i-validate-a-date-string-format-in-python   
+def validate(date_text):
+    try:
+        if date_text != datetime.strptime(date_text, "%Y-%m-%d").strftime('%Y-%m-%d'):
+            raise ValueError
+        return True
+    except ValueError:
+        return False
+    
 
 # ask the user to select an input date
 def get_custom_date():
@@ -92,7 +110,12 @@ def get_custom_date():
     return input_date
     
 
-def get_custom_data(date):
+def get_custom_data(input_date,symbol_1,symbol_2):
+    
+    # validate the date format
+    if validate(input_date) == False:
+        sys.exit("Your input date format is incorrect. Please use YYYY-MM-DD.")
+       
     # pull data for stock 1
     csv_1_url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={symbol_1}&outputsize=full&apikey={alphavantage_API_KEY}&datatype=csv"
     df_1 = read_csv(csv_1_url)
@@ -115,19 +138,17 @@ def get_custom_data(date):
 
     # pull stock price on the custom date
     # validate the custom date
-    if date < max(earliest_day_1,earliest_day_2):
-        print("Your input is invalid. Please enter a date that both stocks are listed.")
-        exit()
-    elif date > max(latest_day_1,latest_day_2):
-        print("Your input is invalid. Please enter a historical date.")
-        exit()
+    if input_date < max(earliest_day_1,earliest_day_2):
+        sys.exit("Your input is invalid. Please enter a date that both stocks are listed.")
+    elif input_date > max(latest_day_1,latest_day_2):
+        sys.exit("Your input is invalid. Please enter a historical date.")
     else: # to get the adjusted closing price on the custom date for the two stocks and calculate the gain/loss
         for index, row in df_1.iterrows():
-            if row["timestamp"] == date:
+            if row["timestamp"] == input_date:
                 stock_1_inputprice = row["adjusted_close"]
                
         for index, row in df_2.iterrows():
-            if row["timestamp"] == date:
+            if row["timestamp"] == input_date:
                 stock_2_inputprice = row["adjusted_close"]
                
         today_value_1 = 1000/stock_1_inputprice*latest_price_1
@@ -142,10 +163,10 @@ def get_custom_data(date):
             winner = symbol_2
             loser = symbol_1
 
-        print(f"Adjusted closing price of {symbol_1.upper()} on {date} is: ",to_usd(stock_1_inputprice))
-        print(f"Adjusted closing price of {symbol_2.upper()} on {date} is: ",to_usd(stock_2_inputprice))
-        print(f"If you invested $1,000 in {symbol_1.upper()} on {date}, your stock is worthing", to_usd(today_value_1),"today. Your holding period gain/(loss) is",to_pct(custom_gain_1))
-        print(f"If you invested $1,000 in {symbol_2.upper()} on {date}, your stcok is worthing", to_usd(today_value_2),"today. Your holding period gain/(loss) is",to_pct(custom_gain_2))
+        print(f"Adjusted closing price of {symbol_1.upper()} on {input_date} is: ",to_usd(stock_1_inputprice))
+        print(f"Adjusted closing price of {symbol_2.upper()} on {input_date} is: ",to_usd(stock_2_inputprice))
+        print(f"If you invested $1,000 in {symbol_1.upper()} on {input_date}, your stock is worthing", to_usd(today_value_1),"today. Your holding period gain/(loss) is",to_pct(custom_gain_1))
+        print(f"If you invested $1,000 in {symbol_2.upper()} on {input_date}, your stcok is worthing", to_usd(today_value_2),"today. Your holding period gain/(loss) is",to_pct(custom_gain_2))
         print(f"The winner is {winner.upper()}!")
 
 def new_df():
@@ -207,6 +228,8 @@ if __name__ == "__main__":
     stock_information(symbol=symbol_1)
     stock_information(symbol=symbol_2)
 
+
+
     # part 2: put custom date and compare
     # capture input
     input_date=get_custom_date()
@@ -214,8 +237,10 @@ if __name__ == "__main__":
 
     # print out the results
 
-    get_custom_data(date=input_date)
+    get_custom_data(input_date, symbol_1, symbol_2)
 
     new_df()
+
+
 
 
