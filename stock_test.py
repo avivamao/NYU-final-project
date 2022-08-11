@@ -11,7 +11,6 @@ def test_stock_symbol():
         stock_information(symbol="test1")
 
 
-
 def test_custom_data(capsys):
 
     # with invalidate input date, an error shows up and the app stops running
