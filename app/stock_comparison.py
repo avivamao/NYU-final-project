@@ -209,8 +209,13 @@ def new_df():
     line_1 = Scatter(x=new_df_1["timestamp"], y=new_df_1["gain_loss_%"], name=symbol_1)   
     line_2 = Scatter(x=new_df_2["timestamp"], y=new_df_2["gain_loss_%"], name=symbol_2)
     fig = Figure(data=[line_1,line_2]) 
-    fig.update_layout(title=f"Holding Period Gain/Loss: {symbol_1} v.s. {symbol_2}",yaxis_ticksuffix = '%', yaxis_tickformat = ',.2f')
-    fig.show()
+    fig.update_layout(title=f"Holding Period Gain/Loss: {symbol_1.upper()} v.s. {symbol_2.upper()}",yaxis_ticksuffix = '%', yaxis_tickformat = ',.2f')
+    
+    chart = input("Print the performance chart? Y or N: ")
+    if chart.upper() == "Y":
+        fig.show()
+    else:
+        sys.exit("The program is ended.")
    
 
 if __name__ == "__main__":
