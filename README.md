@@ -43,3 +43,11 @@ python -m app.stock_comparison
 ```
 
 ## Testing
+
+Running tests:
+
+```sh
+pytest
+```
+
+## [License](/LICENSE.md)
