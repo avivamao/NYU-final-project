@@ -165,8 +165,8 @@ def get_custom_data(input_date,symbol_1,symbol_2):
 
         print(f"Adjusted closing price of {symbol_1.upper()} on {input_date} is: ",to_usd(stock_1_inputprice))
         print(f"Adjusted closing price of {symbol_2.upper()} on {input_date} is: ",to_usd(stock_2_inputprice))
-        print(f"If you invested $1,000 in {symbol_1.upper()} on {input_date}, your stock is worthing", to_usd(today_value_1),"today. Your holding period gain/(loss) is",to_pct(custom_gain_1))
-        print(f"If you invested $1,000 in {symbol_2.upper()} on {input_date}, your stcok is worthing", to_usd(today_value_2),"today. Your holding period gain/(loss) is",to_pct(custom_gain_2))
+        print(f"If you invested $1,000 in {symbol_1.upper()} on {input_date}, your stock is worth", to_usd(today_value_1),"today. Your holding period gain/(loss) is",to_pct(custom_gain_1))
+        print(f"If you invested $1,000 in {symbol_2.upper()} on {input_date}, your stcok is worth", to_usd(today_value_2),"today. Your holding period gain/(loss) is",to_pct(custom_gain_2))
         print(f"The winner is {winner.upper()}!")
 
 def new_df():
